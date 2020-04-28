@@ -18,18 +18,17 @@ connection.connect();
 
 /* The handler for the DEFAULT route */
 app.get('/', function(req, res){
-    res.render('home');
-});
-
-app.get('/quote', function(req, res){
-    var stmt = 'select quote, firstName, lastName ' +
-              'from l9_quotes, l9_author ' +
-              'where l9_quotes.authorId=l9_author.authorId ' + 
-              'and quote like \'' + req.query.keyword + '%\';'
-    connection.query(stmt, function(error, results){
+  var temp = 'select country from l9_author';
+    connection.query(temp, function(error, results) {
         if(error) throw error;
-        var name = results[0].firstName + ' ' + results[0].lastName;
-        res.render('quotes', {name: name, quotes: results});      
+        var arr = [];
+        results.forEach(function(r) {
+            if (!arr.includes(r.country)) {
+                arr.push(r.country);
+            }
+        });
+        
+        res.render('home', {countries: arr});
     });
 });
 
@@ -40,7 +39,7 @@ app.get('/author', function(req, res){
                 + req.query.lastname + '\';'
 	connection.query(stmt, function(error, found){
 	    var author = null;
-	    if(error) throw error;
+	   // if(error) throw error;
 	    if(found.length){
 	        author = found[0];
 	        // Convert the Date type into the String type
@@ -63,6 +62,45 @@ app.get('/author/:aid', function(req, res){
         res.render('quotes', {name: name, quotes: results});      
     });
 });
+
+/* The handler for the GENDER route */
+app.get('/gender', function(req, res){
+    var stmt = 'select quote, firstName, lastName ' +
+               'from l9_quotes, l9_author ' +
+               'where sex=\'' + req.query.gender + '\';';
+    connection.query(stmt, function(error, results){
+        if(error) throw error;
+        var name = results[0].firstName + ' ' + results[0].lastName;
+        res.render('quotes', {name: name, quotes: results});      
+    });
+});
+
+/* The handler for the KEY route */
+app.get('/keyword', function(req, res){
+    var stmt = 'select quote, firstName, lastName ' +
+               'from l9_quotes, l9_author ' +
+               'where l9_quotes.authorId=l9_author.authorId ' + 
+               'and quote like\'%' + req.query.keyword + '%\';';
+    connection.query(stmt, function(error, results){
+        if(error) throw error;
+        var name = results[0].firstName + ' ' + results[0].lastName;
+        res.render('quotes', {name: name, quotes: results});      
+    });
+});
+
+/* the handler for the COUNTRY route */
+app.get('/category', function(req, res){
+    var stmt = 'select quote, firstName, lastName ' +
+               'from l9_quotes, l9_author ' +
+               'where l9_quotes.authorId=l9_author.authorId ' + 
+               'and country=\'' + req.query.country + '\';';
+    connection.query(stmt, function(error, results){
+        if(error) throw error;
+        var name = results[0].firstName + ' ' + results[0].lastName;
+        res.render('quotes', {name: name, quotes: results});      
+    });
+});
+
 
 /* The handler for undefined routes */
 app.get('*', function(req, res){
